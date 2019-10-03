@@ -14,7 +14,7 @@ $config = [
                     'prefix' => 'dev-',
                 ]
             ],
-            'apiUrl'            => 'http://api.dev.joind.in',
+            'apiUrl'            => 'https://api.joind.in',
             'googleAnalyticsId' => '',
             'proxy'             => '',
             'csrfSecret'        => '',

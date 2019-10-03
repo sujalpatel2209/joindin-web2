@@ -1,8 +1,10 @@
 <?php
+
 namespace Application;
 
 use Event\EventDb;
 use Event\EventApi;
+use GuzzleHttp\Client;
 use User\UserDb;
 use User\UserApi;
 
@@ -24,18 +26,18 @@ class ApplicationController extends BaseController
             : $this->application->request()->get('page');
 
         $perPage = 10;
-        $start   = ($page -1) * $perPage;
+        $start = ($page - 1) * $perPage;
 
-        $eventApi       = $this->getEventApi();
+        $eventApi = $this->getEventApi();
         $upcomingEvents = $eventApi->getEvents($perPage, $start, 'upcoming');
-        $cfpEvents      = $eventApi->getEvents(4, 0, 'cfp', true);
+        $cfpEvents = $eventApi->getEvents(4, 0, 'cfp', true);
 
         $this->render(
             'Application/index.html.twig',
             [
-                'events'     => $upcomingEvents,
+                'events' => $upcomingEvents,
                 'cfp_events' => $cfpEvents,
-                'page'       => $page,
+                'page' => $page,
             ]
         );
     }
@@ -58,10 +60,24 @@ class ApplicationController extends BaseController
      */
     public function about()
     {
+        $client = new \GuzzleHttp\Client();
+
+      /*  $repos = [
+            'joindin-web2',
+            'joindin-api'
+        ];*/
+        $data = [];
+//        foreach ($repos as $repo) {
+            $response = $client->request('GET', 'https://api.github.com/repos/joindin/joindin-web2/contributors');
+
+            $data = json_decode($response->getBody()->getContents());
+//        }
+
         $this->render(
             'Application/about.html.twig',
             [
                 'upcoming_events' => $this->getCurrentEvents(0, 5),
+                'repo_contributor' => $data
             ]
         );
     }
@@ -75,7 +91,7 @@ class ApplicationController extends BaseController
 
         /** @var FormFactoryInterface $factory */
         $factory = $this->application->formFactory;
-        $form    = $factory->create(new ContactFormType());
+        $form = $factory->create(new ContactFormType());
 
         if ($request->isPost()) {
             $form->submit($request->post($form->getName()));
@@ -83,8 +99,8 @@ class ApplicationController extends BaseController
             if ($form->isValid()) {
                 $values = $form->getData();
 
-                $config       = $this->application->config('oauth');
-                $clientId     = $config['client_id'];
+                $config = $this->application->config('oauth');
+                $clientId = $config['client_id'];
                 $clientSecret = $config['client_secret'];
 
                 try {
